@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
+import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
+import { providerAtom, signerAtom } from "store/store";
 import { getIsMetaMaskInstalled } from "utils/metamask";
 
 export type UseWalletReturns = {
@@ -10,8 +12,10 @@ export type UseWalletReturns = {
 };
 
 export const useWallet = (): UseWalletReturns => {
+  const [provider, setProvider] = useAtom(providerAtom);
+  const [, setSigner] = useAtom(signerAtom);
+
   const [isConnected, setIsConnected] = useState(false);
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
   const [accountAddr, setAccountAddr] = useState("");
 
   useEffect(() => {
@@ -38,6 +42,9 @@ export const useWallet = (): UseWalletReturns => {
       setIsConnected(true);
       setAccountAddr(accounts[0]);
     }
+
+    const signer = provider.getSigner(0);
+    setSigner(signer);
   };
 
   const requestToConnect = async () => {
