@@ -19,9 +19,14 @@ export const Header: VFC<Props> = ({
             RopiSwap
           </Text>
 
-          <NextLink href="/">
-            <Link fontSize="18px"> Home</Link>
-          </NextLink>
+          <HStack gap="20px">
+            <NextLink href="/buy">
+              <Link fontSize="18px">Buy Token</Link>
+            </NextLink>
+            <NextLink href="/sell">
+              <Link fontSize="18px">Sell Token</Link>
+            </NextLink>
+          </HStack>
         </HStack>
 
         <Box>

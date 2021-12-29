@@ -14,14 +14,11 @@ export const getDexContract = async (
   return contract;
 };
 
-export const getDaiContract = async (
-  signer: ethers.providers.JsonRpcSigner
+export const getERC20Contract = async (
+  signer: ethers.providers.JsonRpcSigner,
+  address: string
 ) => {
   const erc20 = await ERC20;
-  const contract = new ethers.Contract(
-    "0x6d92EE9CfB11B98d7848902024B4f4A35D2A912F",
-    erc20.abi,
-    signer
-  );
+  const contract = new ethers.Contract(address, erc20.abi, signer);
   return contract;
 };

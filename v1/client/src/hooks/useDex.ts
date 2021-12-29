@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { useAtom } from "jotai";
 import { useState } from "react";
 import { providerAtom, signerAtom } from "store/store";
-import { getDaiContract, getDexContract } from "utils/getContract";
+import { getERC20Contract, getDexContract } from "utils/getContract";
 import { getAllPrice } from "utils/getPrice";
 
 enum TokenSymbol {
@@ -16,6 +16,8 @@ type TokenInfo = {
   symbol: TokenSymbol;
   address: string;
 };
+
+const dexAddr = process.env.NEXT_PUBLIC_DEX_CONTRACT_ADDR;
 
 export const tokenList: TokenInfo[] = [
   {
@@ -93,25 +95,75 @@ export const useDex = () => {
     const tokenInfo = getTokenInfo(selectedToken);
 
     if (!tokenInfo || !signer || cost <= 0) return;
+    const costWei = ethers.utils.parseEther(cost.toString());
+    const amountWei = ethers.utils.parseEther(Math.round(amount).toString());
 
     try {
       const contract = await getDexContract(signer);
       const tx = await contract.buyToken(
         tokenInfo.address,
-        ethers.utils.parseEther(cost.toString()),
-        ethers.utils.parseEther(Math.round(amount).toString()),
+        costWei,
+        amountWei,
         {
-          value: ethers.utils.parseEther(cost.toString()),
+          value: costWei,
         }
       );
       await tx.wait();
 
       toast({
         status: "success",
-        title: `You bought ${Math.round(amount)} DAI for ${cost} ETH.`,
+        title: `You bought ${Math.round(amount)} ${
+          tokenInfo.symbol
+        } for ${cost} ETH.`,
         position: "top-right",
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+      toast({
+        status: "error",
+        title: "Failed to purchase tokens",
+        position: "top-right",
+      });
+    }
+  };
+
+  const sellToken = async () => {
+    const tokenInfo = getTokenInfo(selectedToken);
+
+    if (!tokenInfo || !signer || cost <= 0) return;
+    const costWei = ethers.utils.parseEther(cost.toString());
+    const amountWei = ethers.utils.parseEther(Math.round(amount).toString());
+
+    try {
+      const tokenContract = await getERC20Contract(signer, tokenInfo.address);
+      const signerAddr = await signer.getAddress();
+      const allowance = await tokenContract.allowance(signerAddr, dexAddr);
+      if (parseInt(costWei.toString()) > parseInt(allowance)) {
+        await tokenContract.approve(dexAddr, costWei);
+      }
+
+      const dexContract = await getDexContract(signer);
+      const tx = await dexContract.sellToken(
+        tokenInfo.address,
+        costWei,
+        amountWei
+      );
+      await tx.wait();
+      toast({
+        status: "success",
+        title: `You sold ${cost} ${tokenInfo.symbol} for ${Math.round(
+          amount
+        )} ETH.`,
+        position: "top-right",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        status: "error",
+        title: "Failed to sell tokens",
+        position: "top-right",
+      });
+    }
   };
 
   const getTokenInfo = (tokenSymbol: TokenSymbol) => {
@@ -123,6 +175,8 @@ export const useDex = () => {
     cost,
     onChangeToken,
     onChangeCost,
+    setMode,
     buyToken,
+    sellToken,
   };
 };
