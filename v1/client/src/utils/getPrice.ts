@@ -1,8 +1,8 @@
-type Price = {
+export type Price = {
   [key in string]: { eth: number };
 };
 
-type PriceList = {
+export type PriceList = {
   daiPrice: number;
   linkPrice: number;
   compPrice: number;

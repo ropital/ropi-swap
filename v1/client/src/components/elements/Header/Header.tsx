@@ -20,7 +20,7 @@ export const Header: VFC<Props> = ({
           </Text>
 
           <HStack gap="20px">
-            <NextLink href="/buy">
+            <NextLink href="/">
               <Link fontSize="18px">Buy Token</Link>
             </NextLink>
             <NextLink href="/sell">

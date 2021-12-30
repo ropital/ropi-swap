@@ -15,6 +15,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import React, { useEffect } from "react";
 import { ArrowIcon } from "components/elements/Icon/ArrowIcon";
+import { TokenInput } from "components/elements/Input/TokenInput";
 
 const Home: NextPage = () => {
   const wallet = useWallet();
@@ -44,20 +45,11 @@ const Home: NextPage = () => {
           bgColor="white"
         >
           <Flex gap="10px">
-            <NumberInput
-              min={0}
+            <TokenInput
               flex="1"
               value={dex.cost}
               onChange={(_, num) => dex.onChangeCost(num)}
-              precision={2}
-              step={0.2}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
+            />
 
             <Select w="100px" onChange={dex.onChangeToken}>
               {tokenList.map((token) => (

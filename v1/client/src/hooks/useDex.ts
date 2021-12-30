@@ -1,10 +1,10 @@
 import { useToast } from "@chakra-ui/toast";
 import { ethers } from "ethers";
 import { useAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { providerAtom, signerAtom } from "store/store";
 import { getERC20Contract, getDexContract } from "utils/getContract";
-import { getAllPrice } from "utils/getPrice";
+import { getAllPrice, PriceList } from "utils/getPrice";
 
 enum TokenSymbol {
   DAI = "DAI",
@@ -38,6 +38,7 @@ type Mode = "buy" | "sell";
 
 export const useDex = () => {
   const [signer] = useAtom(signerAtom);
+  const [priceList, setPriceList] = useState<PriceList>();
   const toast = useToast();
 
   // Form
@@ -48,8 +49,19 @@ export const useDex = () => {
   const [cost, setCost] = useState(0);
   const [amount, setAmount] = useState(0);
 
+  useEffect(() => {
+    initPriceList();
+  }, []);
+
+  const initPriceList = async () => {
+    const list = await getAllPrice();
+    setPriceList(list);
+  };
+
   const changePrice = async (input: number, tokenSymbol: TokenSymbol) => {
-    const { daiPrice, linkPrice, compPrice } = await getAllPrice();
+    if (!priceList) return;
+
+    const { daiPrice, linkPrice, compPrice } = priceList;
 
     switch (tokenSymbol) {
       case TokenSymbol.DAI:
